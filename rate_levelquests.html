@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Avaliar Level Quests</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      font-size: 2rem;
+      margin: 20px 0;
+      cursor: pointer;
+    }
+    .stars i {
+      color: #555;
+      transition: color 0.2s;
+    }
+    .stars i.active {
+      color: gold;
+    }
+    button {
+      margin-top: 20px;
+    }
+    #gameMessage {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(44,30,51,0.9);
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-size: 18px;
+      color: #fff;
+      max-width: 80%;
+      display: none;
+      z-index: 999;
+      animation: fadeIn 0.3s ease-in-out;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Avaliar Level Quests</h1>
+
+  <div class="stars">
+    <i class="fas fa-star" data-value="1"></i>
+    <i class="fas fa-star" data-value="2"></i>
+    <i class="fas fa-star" data-value="3"></i>
+    <i class="fas fa-star" data-value="4"></i>
+    <i class="fas fa-star" data-value="5"></i>
+  </div>
+
+  <button onclick="enviarAvaliacao()">Enviar Avaliação</button>
+
+  <div id="gameMessage"></div>
+
+  <script>
+    let estrelas = 0;
+    const starEls = document.querySelectorAll('.stars i');
+
+    starEls.forEach(star => {
+      star.addEventListener('click', () => {
+        estrelas = star.dataset.value;
+        starEls.forEach(s => {
+          s.classList.toggle('active', s.dataset.value <= estrelas);
+        });
+      });
+    });
+
+    function showMessage(text, duration = 2000) {
+      const msgBox = document.getElementById("gameMessage");
+      msgBox.innerText = text;
+      msgBox.style.display = "block";
+
+      clearTimeout(msgBox._timeout);
+      msgBox._timeout = setTimeout(() => {
+        msgBox.style.display = "none";
+      }, duration);
+    }
+
+    async function enviarAvaliacao() {
+      if(estrelas === 0) {
+        showMessage("Escolha uma quantidade de estrelas!", 2000);
+        return;
+      }
+
+      let navegador = navigator.userAgent;
+      let ip = "Desconhecido";
+      try {
+        const resp = await fetch("https://api.ipify.org?format=json");
+        const data = await resp.json();
+        ip = data.ip;
+      } catch(e) {}
+
+      const payload = {
+        embeds: [{
+          title: "Avaliação nova!",
+          description: `**IP:** ${ip}\n**Navegador:** ${navegador}\n**Estrelas:** ${estrelas}\n**Jogo:** Level Quests\n**Data:** ${new Date().toLocaleString()}`
+        }]
+      };
+
+      const webhookURL = "https://canary.discord.com/api/webhooks/1408481577268412416/ckY2Th16kqeR4Gf_kXvGbgYeju0uTKiWWVRTQuN5FH6P2VVRMEcugypnyTyqI8oU5yFH";
+
+      await fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      showMessage("Avaliação enviada! Obrigado", 2000);
+    }
+  </script>
+</body>
+</html>

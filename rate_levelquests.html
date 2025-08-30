@@ -6,6 +6,17 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #caa6ff;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+
     .stars {
       display: flex;
       justify-content: center;
@@ -14,16 +25,34 @@
       margin: 20px 0;
       cursor: pointer;
     }
+
     .stars i {
       color: #555;
       transition: color 0.2s;
     }
+
     .stars i.active {
       color: gold;
     }
+
     button {
-      margin-top: 20px;
+      padding: 12px 28px;
+      border-radius: 12px;
+      border: 3px solid #2c1e33;
+      background: linear-gradient(145deg, #3c2b5c, #2c1e33);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.5);
     }
+
+    button:hover {
+      background: linear-gradient(145deg, #593c88, #3c2b5c);
+      transform: translateY(-3px) scale(1.05);
+    }
+
     #gameMessage {
       position: fixed;
       bottom: 20px;
@@ -40,6 +69,7 @@
       animation: fadeIn 0.3s ease-in-out;
       box-shadow: 0 5px 20px rgba(0,0,0,0.5);
     }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateX(-50%) translateY(20px); }
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -66,6 +96,7 @@
     let estrelas = 0;
     const starEls = document.querySelectorAll('.stars i');
 
+    // Seleciona estrelas
     starEls.forEach(star => {
       star.addEventListener('click', () => {
         estrelas = star.dataset.value;
@@ -75,6 +106,7 @@
       });
     });
 
+    // Mostrar mensagem na tela
     function showMessage(text, duration = 2000) {
       const msgBox = document.getElementById("gameMessage");
       msgBox.innerText = text;
@@ -86,7 +118,14 @@
       }, duration);
     }
 
+    // Enviar avaliação
     async function enviarAvaliacao() {
+      // Limite por sessão
+      if(sessionStorage.getItem("avaliou")) {
+        showMessage("Você já enviou sua avaliação!", 2000);
+        return;
+      }
+
       if(estrelas === 0) {
         showMessage("Escolha uma quantidade de estrelas!", 2000);
         return;
@@ -94,6 +133,7 @@
 
       let navegador = navigator.userAgent;
       let ip = "Desconhecido";
+
       try {
         const resp = await fetch("https://api.ipify.org?format=json");
         const data = await resp.json();
@@ -115,8 +155,12 @@
         body: JSON.stringify(payload)
       });
 
+      // Marca que o usuário avaliou
+      sessionStorage.setItem("avaliou", "true");
+
       showMessage("Avaliação enviada! Obrigado", 2000);
     }
   </script>
+
 </body>
 </html>
